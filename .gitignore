@@ -1,0 +1,8 @@
+client-app/
+.vs
+bin
+obj
+Properties
+appsettings.Development
+appsettings
+*.json
