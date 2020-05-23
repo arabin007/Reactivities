@@ -9,7 +9,7 @@ class App extends Component {
     };
 
     componentDidMount() {
-        axios.get('http://localhost:5000/api/values').then(response => {
+        axios.get('http://localhost:5000/api/activities').then(response => {
             this.setState({
                 values: response.data
             });
@@ -26,7 +26,7 @@ class App extends Component {
                 <List>
                     {
                         this.state.values.map((value: any) => (
-                            <List.Item>{value.name} </List.Item>
+                            <List.Item key={value.id}>{value.title} </List.Item>
                     ))}
                 </List>
             </div>
