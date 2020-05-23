@@ -6,3 +6,5 @@ Properties
 appsettings.Development
 appsettings
 *.json
+
+#This is test
