@@ -1,10 +1,10 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Container } from 'semantic-ui-react'
 import '../layout/style.css';
-import axios from 'axios';
 import { IActivity } from '../models/activity';
 import NavBar from '../../feature/Nav/NavBar';
 import ActivityDashboard from '../../feature/Dashboard/ActivityDashboard';
+import agent from '../api/agent';
 
 
 const App = () => {
@@ -14,21 +14,22 @@ const App = () => {
     const [editMode, setEditMode] = useState(false);
 
     useEffect(() => {
-        axios
-            .get<IActivity[]>('http://localhost:5000/api/activities')
+        agent.Activities.list()
             .then(response => {
-                let activities: IActivity[]= [];
-                response.data.forEach(activity => {
+                let activities: IActivity[] = [];
+                response.forEach((activity: IActivity) => {
                     activity.date = activity.date.split(".")[0];
                     activities.push(activity);
                 })
                 setActivities(activities);
-            });
+            })
     }, []);
 
     const handleSelectActivity = (id: string) => {
-        setSelectedActivity(activities.filter(a => a.id === id)[0]);
-        setEditMode(false);
+        agent.Activities.details(id).then(() => {
+            setSelectedActivity(activities.filter(a => a.id === id)[0]);
+            setEditMode(false);
+        })
     }
 
     const handleOpenCreateForm = () => {
@@ -37,19 +38,29 @@ const App = () => {
     }
 
     const handleCreateActivity = (activity: IActivity) => {
-        setActivities([...activities, activity]);
-        setSelectedActivity(activity);
-        setEditMode(false);
+        agent.Activities.create(activity).then(() => {
+
+            setActivities([...activities, activity])
+            setSelectedActivity(activity);
+            setEditMode(false);
+
+        })
     }
 
     const handleEditActivity = (activity: IActivity) => {
-        setActivities([...activities.filter(a => a.id !== activity.id), activity]);
-        setSelectedActivity(activity);
-        setEditMode(false);
+        agent.Activities.update(activity).then(() => {
+
+            setActivities([...activities.filter(a => a.id !== activity.id), activity])
+            setSelectedActivity(activity);
+            setEditMode(false);
+
+        })
     }
 
     const handleDeleteActivity = (id: string) => {
-        setActivities([...activities.filter(a => a.id !== id)]);
+        agent.Activities.delete(id).then( () => {
+            setActivities([...activities.filter(a => a.id !== id)]);
+    })
     }
 
     return (
