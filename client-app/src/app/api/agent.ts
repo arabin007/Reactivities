@@ -5,11 +5,16 @@ axios.defaults.baseURL = "http://localhost:5000/api";
 
 const responseBody = (response: AxiosResponse) => { return response.data }
 
+const sleep = (ms: number) => (response: AxiosResponse) => 
+    new Promise<AxiosResponse>(resolve => setTimeout(() => resolve(response), ms));     //For Artificial delay
+
+
 const requests = {
-    get: (url: string) => { return axios.get(url).then(responseBody); },
-    post: (url: string, body: {}) => { return axios.post(url, body).then(responseBody); },
-    put: (url: string, body: {}) => { return axios.put(url, body).then(responseBody); },
-    del: (url: string) => { return axios.delete(url); }
+    get: (url: string) => { return axios.get(url).then(sleep(1000)).then(responseBody); },
+    //get: (url: string) => { return axios.get(url).then(responseBody); }, //Without delay
+    post: (url: string, body: {}) => { return axios.post(url, body).then(sleep(1000)).then(responseBody); },
+    put: (url: string, body: {}) => { return axios.put(url, body).then(sleep(1000)).then(responseBody); },
+    del: (url: string) => { return axios.delete(url).then(sleep(1000)).then(responseBody); }
 }
 
 const Activities = {

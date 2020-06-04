@@ -1,87 +1,36 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { Fragment } from 'react';
 import { Container } from 'semantic-ui-react'
 import '../layout/style.css';
-import { IActivity } from '../models/activity';
 import NavBar from '../../feature/Nav/NavBar';
 import ActivityDashboard from '../../feature/Dashboard/ActivityDashboard';
-import agent from '../api/agent';
+import { observer } from 'mobx-react-lite'
+import { Route, withRouter, RouteComponentProps } from 'react-router-dom';
+import Homepage from '../../feature/Home/Homepage';
+import ActivityForm from '../../feature/Form/ActivityForm';
+import ActivityDetails from '../../feature/Details/ActivityDetails';
 
-
-const App = () => {
-
-    const [activities, setActivities] = useState<IActivity[]>([]);
-    const [selectedActivity, setSelectedActivity] = useState<IActivity | null>(null);
-    const [editMode, setEditMode] = useState(false);
-
-    useEffect(() => {
-        agent.Activities.list()
-            .then(response => {
-                let activities: IActivity[] = [];
-                response.forEach((activity: IActivity) => {
-                    activity.date = activity.date.split(".")[0];
-                    activities.push(activity);
-                })
-                setActivities(activities);
-            })
-    }, []);
-
-    const handleSelectActivity = (id: string) => {
-        agent.Activities.details(id).then(() => {
-            setSelectedActivity(activities.filter(a => a.id === id)[0]);
-            setEditMode(false);
-        })
-    }
-
-    const handleOpenCreateForm = () => {
-        setSelectedActivity(null);
-        setEditMode(true);
-    }
-
-    const handleCreateActivity = (activity: IActivity) => {
-        agent.Activities.create(activity).then(() => {
-
-            setActivities([...activities, activity])
-            setSelectedActivity(activity);
-            setEditMode(false);
-
-        })
-    }
-
-    const handleEditActivity = (activity: IActivity) => {
-        agent.Activities.update(activity).then(() => {
-
-            setActivities([...activities.filter(a => a.id !== activity.id), activity])
-            setSelectedActivity(activity);
-            setEditMode(false);
-
-        })
-    }
-
-    const handleDeleteActivity = (id: string) => {
-        agent.Activities.delete(id).then( () => {
-            setActivities([...activities.filter(a => a.id !== id)]);
-    })
-    }
+const App: React.FC<RouteComponentProps> = ({ location }) => {
 
     return (
         <Fragment>
-            <NavBar openCreateForm={handleOpenCreateForm} />
-            <Container style={{ marginTop: '5em' }}>
-                <ActivityDashboard activities={activities}
-                    selectActivity={handleSelectActivity}
-                    selectedActivity={selectedActivity!}
-                    editMode={editMode}
-                    setEditMode={setEditMode}
-                    setSelectedActivityNull={setSelectedActivity}
-                    createActivity={handleCreateActivity}
-                    editActivity={handleEditActivity}
-                    deleteActivity={handleDeleteActivity}
-                />
-            </Container>
+            <Route exact path="/" component={Homepage} />
+            <Route path={'/(.+)'}
+                render={() => (
+                    <Fragment>
+                        <NavBar />
+                        <Container style={{ marginTop: '5em' }}>
+                            <Route exact path="/activities" component={ActivityDashboard} />
+                            <Route path="/activities/:id" component={ActivityDetails} />
+                            <Route key={location.key} path={["/createActivity", "/manage/:id"]} component={ActivityForm} />
+                        </Container>
+                    </Fragment>
+                )}
+            />
+
         </Fragment>
     );
 
 
 }
 
-export default App;
+export default withRouter(observer(App));   // Making the App component observer so it can look at the changes in activityStore and make changes accordingly.

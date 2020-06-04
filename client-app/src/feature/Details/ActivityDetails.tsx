@@ -1,37 +1,44 @@
-﻿import React from 'react';
-import { Card, Image, Button } from 'semantic-ui-react';
-import { IActivity } from '../../app/models/activity';
+﻿import React, { useContext, useEffect } from 'react';
+import { Grid } from 'semantic-ui-react';
+import { observer } from 'mobx-react-lite';
+import ActivityStore from '../../app/stores/activityStore';
+import { RouteComponentProps } from 'react-router-dom';
+import LoadingComponent from '../../app/layout/LoadingComponent';
+import ActivityDetailedHeader from './ActivityDetailedHeader';
+import ActivityDetailedSidebar from './ActivityDetailedSidebar';
+import ActivityDetailedInfo from './ActivityDetailedInfo';
+import ActivityDetailedChat from './ActivityDetailedChat';
 
 
-interface IProps {
-    selectedActivity: IActivity ;
-    editMode: boolean;
-    setEditMode: (editMode: boolean) => void;
-    setSelectedActivityNull: (activity: null) => void;
+interface detailParams {
+    id: string
 }
 
 
-const ActivityDetail: React.FC<IProps> = ({ selectedActivity, setEditMode, setSelectedActivityNull }) => {
+const ActivityDetail: React.FC<RouteComponentProps<detailParams>> = ({ match, history }) => {
+
+    const activityStore = useContext(ActivityStore);
+    const { activity, loadActivity, loadingInitial } = activityStore;
+
+    useEffect(() => {
+        loadActivity(match.params.id)
+    }, [loadActivity, match.params.id])
+
+    if (loadingInitial || !activity) return <LoadingComponent content='Loading Activity...' />
+
     return (
-        <Card fluid>            {/*Used Fluid so that Card takes all available width*/}
-            <Image src={`/assets/categoryImages/${selectedActivity.category}.jpg`} wrapped ui={false} />
-            <Card.Content>
-                <Card.Header>{selectedActivity.title}</Card.Header>
-                <Card.Meta>
-                    <span >{selectedActivity.date}</span>
-                </Card.Meta>
-                <Card.Description>
-                    {selectedActivity.description}
-                </Card.Description>
-            </Card.Content>
-            <Card.Content extra>
-                <Button.Group widths={2}> {/*widths={2} means there are 2 buttons that sud occupy all space*/}
-                    <Button onClick={() => setEditMode(true)} basic color='blue' content='Edit' />
-                    <Button onClick={()=>setSelectedActivityNull(null)} basic color='grey' content='Cancel' />
-                </Button.Group>
-            </Card.Content>
-        </Card>
+        <Grid>
+            <Grid.Column width={10}>
+                <ActivityDetailedHeader activity={activity} />
+                <ActivityDetailedInfo activity={activity} />
+                <ActivityDetailedChat />
+            </Grid.Column>
+
+            <Grid.Column width={6}>
+                <ActivityDetailedSidebar />
+            </Grid.Column>
+        </Grid>
     );
 }
 
-export default ActivityDetail;
+export default observer(ActivityDetail);

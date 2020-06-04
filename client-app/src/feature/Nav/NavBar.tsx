@@ -1,28 +1,26 @@
 ﻿import React from 'react';
 import { Menu, Container, Button } from 'semantic-ui-react';
+import { observer } from 'mobx-react-lite';
+import { NavLink } from 'react-router-dom';
 
 
-interface IProps {
-    openCreateForm: () => void;
-}
+const NavBar: React.FC = () => {
 
-
-const NavBar: React.FC<IProps> = ({ openCreateForm }) => {
     return (
-        <Menu fixed="top" inverted>
+        <Menu fixed="top" inverted >
             <Container>
-                <Menu.Item header>
+                <Menu.Item header inverted exact as={NavLink} to='/' >
                     <img src="/assets/logo.png" alt="logo" style={{marginRight: 10}} />
                     Reactivities
                 </Menu.Item>
-                <Menu.Item name='Activities' />
+                <Menu.Item name='Activities' as={NavLink} to='/activities' />
                 <Menu.Item >
-                    <Button onClick={openCreateForm} positive content="Create Activity" />
+                    <Button as={NavLink} to='/createActivity' positive content="Create Activity" />
                 </Menu.Item>
             </Container>
         </Menu>
     );
 }
 
-export default NavBar;
+export default observer(NavBar);
 

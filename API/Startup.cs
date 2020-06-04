@@ -23,7 +23,7 @@ namespace API
         {
             services.AddDbContext<DataContext>(options => options.UseSqlServer(_conf.GetConnectionString("NewDbConnection")));
             services.AddMediatR(typeof(Application.Activities.List.Handler).Assembly);
-
+            
             services.AddCors(opt =>
             {
                 opt.AddPolicy("CORS_Policy", policy =>
