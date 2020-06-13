@@ -4,6 +4,7 @@ using Persistence;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using FluentValidation;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,6 +21,18 @@ namespace Application.Activities
             public DateTime Date { get; set; }
             public string City { get; set; }
             public string Venue { get; set; }
+        }
+
+        public class CommandValidator: AbstractValidator<Command>
+        {
+            public CommandValidator()
+            {
+                RuleFor(x => x.Title).NotEmpty();
+                RuleFor(x => x.Description).NotEmpty();
+                RuleFor(x => x.Category).NotEmpty();
+                RuleFor(x => x.City).NotEmpty();
+                RuleFor(x => x.Venue).NotEmpty();
+            }
         }
 
         public class Handler : IRequestHandler<Command>
@@ -45,7 +58,7 @@ namespace Application.Activities
                 };
 
                 _context.tblActivities.Add(activity);
-                var result = await _context.SaveChangesAsync();  //Return the number of changes made.
+                var result = await _context.SaveChangesAsync();  //Returns the number of changes made.
                 if(result > 0)
                 {
                     return Unit.Value;

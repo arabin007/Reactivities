@@ -2,6 +2,9 @@
 import { createContext, SyntheticEvent } from 'react';
 import { IActivity } from '../models/activity';
 import agent from '../api/agent';
+import { history } from '../..';
+import { toast } from 'react-toastify';
+
 
 configure({ enforceActions: "always" }) // Although Mobx can change the otherwise immutable fileds ie observables. It is recommended that it is done inside an action. Since we are using async keyword and we are awaiting something to happen, changes made after await keyword is not covered by the action decorator. Hence we should add another action as 'runInAction' before making change to these obeserables.
 
@@ -19,10 +22,10 @@ class ActivityStore {
 
     groupActivitiesByDate(activities: IActivity[]) {
         const sortedActivities = activities.sort(
-            (a, b) => Date.parse(a.date) - Date.parse(b.date)
+            (a, b) => a.date.getTime() - b.date.getTime()
         );
         return Object.entries(sortedActivities.reduce((activities, activity) => {
-            const date = activity.date.split('T')[0];
+            const date = activity.date.toISOString().split('T')[0];
             activities[date] = activities[date] ? [...activities[date], activity] : [activity];
             return activities;
         }, {} as { [key: string]: IActivity[] }))
@@ -45,7 +48,7 @@ class ActivityStore {
 
             runInAction('loading activities', () => {       //The first parameter string is solely for debugging purposes only in mobx.
                 activityList.forEach(activity => {
-                    activity.date = activity.date.split('.')[0]
+                    activity.date = new Date(activity.date)
                     //this.activities.push(activity)
                     this.activitiesRepository.set(activity.id, activity)  //Populating activityRepository with individual activity (at a time) obtained from api 
                     this.loadingInitial = false;
@@ -69,13 +72,14 @@ class ActivityStore {
             runInAction('creating activites', () => {
                 this.activitiesRepository.set(activity.id, activity);
                 this.submitting = false;
-            })
+            });
+            history.push(`/activities/${activity.id}`)
 
         } catch (error) {
             runInAction('creating activites error', () => {
                 this.submitting = false;
-
-            })
+            });
+            toast.error("Problem Submitting data.");
             console.log(error);
         }
     };
@@ -89,11 +93,13 @@ class ActivityStore {
                 this.activity = activity;
                 this.submitting = false;
             })
+            history.push(`/activities/${activity.id}`)
 
         } catch (error) {
             runInAction('editing activity error', () => {
                 this.submitting = false;
             });
+            toast.error("Problem Submitting data.");
             console.log(error);
         }
     }
@@ -123,14 +129,18 @@ class ActivityStore {
         let activity = this.getActivity(id);
         if (activity) {
             this.activity = activity;
+            return activity;
         } else {
             this.loadingInitial = true;
             try {
                 activity = await agent.Activities.details(id);
                 runInAction('getting activity', () => {
+                    activity.date = new Date(activity.date)
                     this.activity = activity;
+                    this.activitiesRepository.set(activity.id, activity);
                     this.loadingInitial = false;
                 });
+                return activity;
             } catch (error) {
                 runInAction('getting activity', () => {
                     this.loadingInitial = false;

@@ -25,6 +25,7 @@ const ActivityList: React.FC = () => {
                         </Item.Group>
                     {/* </Segment> */}
                 </Fragment>
+
                 ))}
         </Fragment>
 
