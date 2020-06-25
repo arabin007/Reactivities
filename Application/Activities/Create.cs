@@ -7,6 +7,8 @@ using System.Text;
 using FluentValidation;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Interfaces;
+using System.Linq;
 
 namespace Application.Activities
 {
@@ -38,9 +40,12 @@ namespace Application.Activities
         public class Handler : IRequestHandler<Command>
         {
             private DataContext _context;
-            public Handler(DataContext context)
+            private readonly IUserAccessor _userAccessor;
+
+            public Handler(DataContext context, IUserAccessor userAccessor)
             {
                 _context = context;
+                _userAccessor = userAccessor;
             }
 
             public async Task<Unit> Handle(Command request,
@@ -58,6 +63,19 @@ namespace Application.Activities
                 };
 
                 _context.tblActivities.Add(activity);
+
+                var user = _context.Users.SingleOrDefault(x => x.UserName == _userAccessor.GetCurrentUsername());
+
+                var attendee = new UserActivity()
+                {
+                    AppUser = user,
+                    Activity = activity,
+                    DateJoined = DateTime.Now,
+                    IsHost = true
+                };
+
+                _context.tblUsersActivities.Add(attendee);
+
                 var result = await _context.SaveChangesAsync();  //Returns the number of changes made.
                 if(result > 0)
                 {

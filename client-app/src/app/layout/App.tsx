@@ -1,42 +1,67 @@
-import React, { Fragment } from 'react';
-import { Container } from 'semantic-ui-react'
-import '../layout/style.css';
-import NavBar from '../../feature/Nav/NavBar';
-import ActivityDashboard from '../../feature/Dashboard/ActivityDashboard';
-import { observer } from 'mobx-react-lite'
-import { Route, withRouter, RouteComponentProps, Switch } from 'react-router-dom';
-import Homepage from '../../feature/Home/Homepage';
-import ActivityForm from '../../feature/Form/ActivityForm';
-import ActivityDetails from '../../feature/Details/ActivityDetails';
+import React, { Fragment, useContext, useEffect } from 'react';
+import { Container } from 'semantic-ui-react';
+import NavBar from '../../features/nav/NavBar';
+import ActivityDashboard from '../../features/activities/dashboard/ActivityDashboard';
+import { observer } from 'mobx-react-lite';
+import {
+  Route,
+  withRouter,
+  RouteComponentProps,
+  Switch
+} from 'react-router-dom';
+import HomePage from '../../features/home/HomePage';
+import ActivityForm from '../../features/activities/form/ActivityForm';
+import ActivityDetails from '../../features/activities/details/ActivityDetails';
 import NotFound from './NotFound';
-import { ToastContainer } from 'react-toastify';
+import {ToastContainer} from 'react-toastify';
+import LoginForm from '../../features/user/LoginForm';
+import { RootStoreContext } from '../stores/rootStore';
+import LoadingComponent from './LoadingComponent';
+import ModalContainer from '../common/modals/ModalContainer';
 
 const App: React.FC<RouteComponentProps> = ({ location }) => {
+  const rootStore = useContext(RootStoreContext);
+  const {setAppLoaded, token, appLoaded} = rootStore.commonStore;
+  const {getUser} = rootStore.userStore;
 
-    return (
-        <Fragment>
-            <ToastContainer position='bottom-right' />
-            <Route exact path="/" component={Homepage} />
-            <Route path={'/(.+)'}
-                render={() => (
-                    <Fragment>
-                        <NavBar />
-                        <Container style={{ marginTop: '7em' }}>
-                            <Switch>                      {/*Loads only one Route at a given time*/}
-                                <Route exact path="/activities" component={ActivityDashboard} />
-                                <Route path="/activities/:id" component={ActivityDetails} />
-                                <Route key={location.key} path={["/createActivity", "/manage/:id"]} component={ActivityForm} />
-                                <Route component={NotFound} />
-                            </Switch>
-                        </Container>
-                    </Fragment>
-                )}
-            />
+  useEffect(() => {
+    if (token) {
+      getUser().finally(() => setAppLoaded())
+    } else {
+      setAppLoaded();
+    }
+  }, [getUser, setAppLoaded, token])
 
-        </Fragment>
-    );
+  if (!appLoaded)  return <LoadingComponent content='Loading app...' />
 
+  return (
+    <Fragment>
+      <ModalContainer />
+      <ToastContainer position='bottom-right' />
+      <Route exact path='/' component={HomePage} />
+      <Route
+        path={'/(.+)'}
+        render={() => (
+          <Fragment>
+            <NavBar />
+            <Container style={{ marginTop: '7em' }}>
+              <Switch>
+                <Route exact path='/activities' component={ActivityDashboard} />
+                <Route path='/activities/:id' component={ActivityDetails} />
+                <Route
+                  key={location.key}
+                  path={['/createActivity', '/manage/:id']}
+                  component={ActivityForm}
+                />
+                <Route path='/login' component={LoginForm} />
+                <Route component={NotFound} />
+              </Switch>
+            </Container>
+          </Fragment>
+        )}
+      />
+    </Fragment>
+  );
+};
 
-}
-
-export default withRouter(observer(App));   // Making the App component observer so it can look at the changes in activityStore and make changes accordingly.
+export default withRouter(observer(App));

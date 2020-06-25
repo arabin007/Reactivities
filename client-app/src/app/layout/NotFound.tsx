@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Segment, Button, Header, Icon } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 
@@ -15,7 +15,6 @@ const NotFound = () => {
                 </Button>
             </Segment.Inline>
         </Segment>
-       
     );
 };
 

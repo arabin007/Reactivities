@@ -1,25 +1,43 @@
 ﻿using Domain;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 
 namespace Persistence
 {
-    public class DataContext: DbContext
+    public class DataContext: IdentityDbContext<AppUser>
     {
         public DataContext(DbContextOptions options) :base(options) 
         {
-
+           
         }
         public DbSet<Value> tblValues { get; set; }
         public DbSet<Activity> tblActivities { get; set; }
+        public DbSet<UserActivity> tblUsersActivities { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);     //Added this after adding IdentityDbContext so that it can use string primary key automatically
+
             modelBuilder.Entity<Value>().HasData(
-                new Value { Id = 1, Name = "Value1"},
-                new Value { Id = 2, Name = "Value2"},
-                new Value { Id = 3, Name = "Value3"}
+                new Value { Id = 1, Name = "Value1" },
+                new Value { Id = 2, Name = "Value2" },
+                new Value { Id = 3, Name = "Value3" }
                 );
+
+            modelBuilder.Entity<UserActivity>(x => x.HasKey(ua => new { ua.AppUserId, ua.ActivityId }));
+
+            modelBuilder.Entity<UserActivity>()
+                .HasOne(u => u.AppUser)
+                .WithMany(ua => ua.UserActivities)  //Specifying the ICollection in AppUser
+                .HasForeignKey(u => u.AppUserId);
+
+            modelBuilder.Entity<UserActivity>()
+                .HasOne(a => a.Activity)
+                .WithMany(ua => ua.UserActivities)  //Specifying the ICollection in Activity
+                .HasForeignKey(a => a.ActivityId);
+
         }
     }
 }

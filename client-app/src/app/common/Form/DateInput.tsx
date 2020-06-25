@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { FieldRenderProps } from 'react-final-form';
 import { FormFieldProps, Form, Label } from 'semantic-ui-react';
 import { DateTimePicker } from 'react-widgets';
@@ -14,7 +14,7 @@ const DateInput: React.FC<IProps> = ({
     time = false,
     placeholder,
     meta: { touched, error },
-   ...rest
+    ...rest
 }) => {
     return (
         <Form.Field error={touched && !!error} width={width}>
