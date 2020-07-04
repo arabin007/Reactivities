@@ -14,7 +14,7 @@ namespace Persistence
         public DbSet<Value> tblValues { get; set; }
         public DbSet<Activity> tblActivities { get; set; }
         public DbSet<UserActivity> tblUsersActivities { get; set; }
-
+        public DbSet<Photo> tblPhotos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

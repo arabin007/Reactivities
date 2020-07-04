@@ -6,6 +6,8 @@ export interface IActivity {
     date: Date;
     city: string;
     venue: string;
+    isGoing: boolean;
+    isHost: boolean;
     attendees: IAttendee[];
 }
 
@@ -35,6 +37,6 @@ export interface IAttendee {
     username: string;
     displayName: string;
     image: string;
-    isHost: boolean;
-    following?: boolean;
+    isHost: string;
+    //following?: boolean;
 }

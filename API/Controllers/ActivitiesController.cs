@@ -60,7 +60,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("{id}/attend")]
-        public async Task<ActionResult<Unit>> Unattend(Guid id, Unattend.Command command)
+        public async Task<ActionResult<Unit>> Unattend(Guid id, [FromForm]Unattend.Command command)
         {
             command.Id = id;
             return await Mediator.Send(command);
