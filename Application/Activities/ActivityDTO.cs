@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Application.Comments;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,6 +15,7 @@ namespace Application.Activities
         public DateTime Date { get; set; }
         public string City { get; set; }
         public string Venue { get; set; }
+        public ICollection<CommentDto> Comments { get; set; }
 
         //public ICollection<AttendeeDTO> attendees { get; set; }   Returns attendees: null coz it cannot map with UserActivities in Activity.cs due to name mismatch.
 

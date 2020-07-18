@@ -15,6 +15,7 @@ namespace Persistence
         public DbSet<Activity> tblActivities { get; set; }
         public DbSet<UserActivity> tblUsersActivities { get; set; }
         public DbSet<Photo> tblPhotos { get; set; }
+        public DbSet<Comment> tblComments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

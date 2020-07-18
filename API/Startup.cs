@@ -19,6 +19,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Infrastructure.Photos;
+using API.SignalR;
+using System.Threading.Tasks;
 
 namespace API
 {
@@ -42,12 +44,12 @@ namespace API
             );
             services.AddMediatR(typeof(Application.Activities.List.Handler).Assembly);
             services.AddAutoMapper(typeof(Application.Activities.List.Handler));
-
+            services.AddSignalR();
             services.AddCors(opt =>
             {
                 opt.AddPolicy("CORS_Policy", policy =>
                 {
-                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000");
+                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000").AllowCredentials();
                 });
             });
 
@@ -88,6 +90,19 @@ namespace API
                             ValidateAudience = false,
                             ValidateIssuer = false
                         };
+                        opt.Events = new JwtBearerEvents
+                        {
+                            OnMessageReceived = context =>
+                            {
+                                var accessToken = context.Request.Query["access_token"];
+                                var path = context.HttpContext.Request.Path;
+                                if(!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/chat")))
+                                {
+                                    context.Token = accessToken;
+                                }
+                                return Task.CompletedTask;
+                            }
+                        };
                     });
 
             //Registering Interfaces
@@ -110,6 +125,7 @@ namespace API
 
             app.UseAuthentication();
             app.UseCors("CORS_Policy");
+            app.UseSignalR(routes => routes.MapHub<ChatHub>("/chat"));
             app.UseMvc();
         }
     }
