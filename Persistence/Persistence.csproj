@@ -15,6 +15,8 @@
     <Compile Remove="Migrations\20200516044529_SeedingActivity.Designer.cs" />
     <Compile Remove="Migrations\20200718042617_AddedComments.cs" />
     <Compile Remove="Migrations\20200718042617_AddedComments.Designer.cs" />
+    <Compile Remove="Migrations\20200720105651_AddedUserFollowing.cs" />
+    <Compile Remove="Migrations\20200720105651_AddedUserFollowing.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

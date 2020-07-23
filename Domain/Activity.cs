@@ -13,7 +13,7 @@ namespace Domain
         public DateTime Date { get; set; }
         public string City { get; set; }
         public string Venue { get; set; }
-        public virtual ICollection<UserActivity> UserActivities { get; set; }  // Specifies one activity can have several entries in UserActivities table
+        public virtual ICollection<UserActivity> UserActivities { get; set; }  // Specifies one activity can have several entries in UserActivities table. But this doesnt create new column in Activity table.
         public virtual ICollection<Comment> Comments { get; set; }             // Specifies one activity can have several Comments.
     }
 }

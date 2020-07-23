@@ -1,12 +1,11 @@
 ﻿import React, { useContext, useEffect } from 'react';
 import { Grid } from 'semantic-ui-react';
-//import ProfileHeader from './ProfileHeader';
+import ProfileHeader from './ProfileHeader';
 import ProfileContent from './ProfileContent';
 import { RouteComponentProps } from 'react-router';
 import { RootStoreContext } from '../../app/stores/rootStore';
 import LoadingComponent from '../../app/layout/LoadingComponent';
 import { observer } from 'mobx-react-lite';
-import ProfileHeader from './ProfileHeader';
 
 interface RouteParams {
     username: string;
@@ -20,11 +19,11 @@ const ProfilePage: React.FC<IProps> = ({ match }) => {
         loadingProfile,
         profile,
         loadProfile,
-    //    follow,
-    //    unfollow,
-    //    isCurrentUser,
-    //    loading,
-    //    setActiveTab
+        follow,
+        unfollow,
+        isCurrentUser,
+        loading,
+        setActiveTab
     } = rootStore.profileStore;
 
     useEffect(() => {
@@ -35,15 +34,15 @@ const ProfilePage: React.FC<IProps> = ({ match }) => {
 
     return (
         <Grid>
-            <Grid.Column width={16}> <ProfileHeader profile={profile!} /> <ProfileContent />
-                {/* <ProfileHeader
+            <Grid.Column width={16}>
+                <ProfileHeader
                     profile={profile!}
                     isCurrentUser={isCurrentUser}
                     loading={loading}
                     follow={follow}
                     unfollow={unfollow}
                 />
-                <ProfileContent setActiveTab={setActiveTab} /> */}
+                <ProfileContent setActiveTab={setActiveTab} />
             </Grid.Column>
         </Grid>
     );
