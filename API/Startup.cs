@@ -22,6 +22,7 @@ using Infrastructure.Photos;
 using API.SignalR;
 using System.Threading.Tasks;
 using Application.Profiles;
+using System;
 
 namespace API
 {
@@ -35,14 +36,33 @@ namespace API
         public IConfiguration _conf { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+
+        public void ConfigureDevelopmentServices(IServiceCollection services)
         {
             services.AddDbContext<DataContext>(options =>
-                {
-                    options.UseLazyLoadingProxies();
-                    options.UseSqlServer(_conf.GetConnectionString("NewDbConnection"));
-                }
+            {
+                options.UseLazyLoadingProxies();
+                options.UseSqlServer(_conf.GetConnectionString("NewDbConnection"));
+            }
             );
+
+            ConfigureServices(services);
+        }
+
+        public void ConfigureProductionServices(IServiceCollection services)
+        {
+            services.AddDbContext<DataContext>(options =>
+            {
+                options.UseLazyLoadingProxies();
+                options.UseSqlServer(_conf.GetConnectionString("NewDbConnection"));
+            }
+            );
+
+            ConfigureServices(services);
+        }
+        public void ConfigureServices(IServiceCollection services)
+        {
+
             services.AddMediatR(typeof(Application.Activities.List.Handler).Assembly);
             services.AddAutoMapper(typeof(Application.Activities.List.Handler));
             services.AddSignalR();
@@ -50,7 +70,11 @@ namespace API
             {
                 opt.AddPolicy("CORS_Policy", policy =>
                 {
-                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000").AllowCredentials();
+                    policy.AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .WithExposedHeaders("WWW-Authenticate")     //To show token status when it expires in console header and not only in network tab
+                    .WithOrigins("http://localhost:3000")
+                    .AllowCredentials();
                 });
             });
 
@@ -89,7 +113,9 @@ namespace API
                             ValidateIssuerSigningKey = true,
                             IssuerSigningKey = key,
                             ValidateAudience = false,
-                            ValidateIssuer = false
+                            ValidateIssuer = false,
+                            ValidateLifetime = true,        // Returns 401 UnAuthenticated soon after( 5 min) after token expires. Without this line token expires but still authenticates the user
+                            ClockSkew = TimeSpan.Zero       // Returns 401 UnAuthenticated as soon as Token expires.
                         };
                         opt.Events = new JwtBearerEvents
                         {
@@ -97,7 +123,7 @@ namespace API
                             {
                                 var accessToken = context.Request.Query["access_token"];
                                 var path = context.HttpContext.Request.Path;
-                                if(!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/chat")))
+                                if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/chat")))
                                 {
                                     context.Token = accessToken;
                                 }
@@ -125,10 +151,18 @@ namespace API
             //    app.UseDeveloperExceptionPage();
             //}
 
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
             app.UseAuthentication();
             app.UseCors("CORS_Policy");
             app.UseSignalR(routes => routes.MapHub<ChatHub>("/chat"));
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapSpaFallbackRoute(
+                    name: "spa-fallback",
+                    defaults: new { controller = "Fallback", action = "Index" }
+                );
+            });
         }
     }
 }

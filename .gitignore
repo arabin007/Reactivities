@@ -6,5 +6,6 @@ Properties
 appsettings.Development
 appsettings
 *.json
+wwwroot
 
 #This is test
